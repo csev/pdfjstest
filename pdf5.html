@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>PDF.js &#39;Hello, base64!&#39; example</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="googlebot" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+  <script
+    type="text/javascript"
+    src="/js/lib/dummy.js"
+    
+  ></script>
+
+    <link rel="stylesheet" type="text/css" href="/css/result-light.css">
+
+
+  <style id="compiled-css" type="text/css">
+      .pdf-page {
+  border: 1px solid black;
+  direction: ltr;
+}
+
+#pdf-text {
+   position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    opacity: 0.2;
+    line-height: 1.0;
+    z-index: 1000;
+}
+
+#pdf-text > div {
+    color: red;
+    position: absolute;
+    white-space: pre;
+    cursor: text;
+    transform-origin: 0% 0%;
+}
+  </style>
+
+
+        <link href="http://localhost:8888/tsugi-static/js/jquery-ui-1.11.4/jquery-ui.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="http://localhost:8888/tsugi-static/js/annotator-full.1.2.10/annotator.min.css" />
+
+    <script type="text/javascript">//<![CDATA[
+
+        // https://stackoverflow.com/a/19099203/1994792
+    window.onload=function(){
+
+// If absolute URL from the remote server is provided, configure the CORS
+// header on that server.
+// var url = 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/examples/learning/helloworld.pdf';
+var url = 'pythonlearn.pdf';
+
+// Loaded via <script> tag, create shortcut to access PDF.js exports.
+var pdfjsLib = window['pdfjs-dist/build/pdf'];
+
+// The workerSrc property shall be specified.
+// pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@2.2.228/build/pdf.worker.js';
+
+// https://www.sitepoint.com/custom-pdf-rendering/
+function handlePages(page)
+{
+    //This gives us the page's dimensions at full scale
+    var viewport = page.getViewport( 1.5 );
+
+    //We'll create a canvas for each page to draw it on
+    var canvas = document.createElement( "canvas" );
+    canvas.style.display = "block";
+    var context = canvas.getContext('2d');
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+    canvas.setAttribute('class', 'pdf-page');
+
+    document.getElementById('pdf-canvas').appendChild( canvas );
+
+    //Draw it on the canvas
+    page.render({canvasContext: context, viewport: viewport}).then(function() {
+        return page.getTextContent();
+    }).then(function(textContent) {
+    // https://usefulangle.com/post/90/javascript-pdfjs-enable-text-layer
+    var div = document.createElement( "div" );
+    div.setAttribute('class', 'pdf-text');
+
+    var pdf_canvas = $(canvas);
+
+    // Canvas offset
+    var canvas_offset = pdf_canvas.offset();
+
+    // Canvas height
+    var canvas_height = pdf_canvas.get(0).height;
+
+    // Canvas width
+    var canvas_width = pdf_canvas.get(0).width;
+
+    // Assign CSS to the text-layer element
+    $(div).css({ 
+        left: canvas_offset.left + 'px', 
+        top: canvas_offset.top + 'px', 
+        height: canvas_height + 'px', 
+        width: canvas_width + 'px' 
+    });
+
+    // Pass the data to the method for rendering of text over the pdf canvas.
+    pdfjsLib.renderTextLayer({
+        textContent: textContent,
+        container: $(div).get(0),
+        viewport: viewport,
+        textDivs: []
+    });
+    document.getElementById("pdf-text").appendChild(div);
+    // document.body.appendChild( div );
+    });
+        ;
+
+
+    //Move to next page
+    currPage++;
+    if ( thePDF !== null && currPage <= numPages )
+    {
+        thePDF.getPage( currPage ).then( handlePages );
+    }
+}
+
+
+// Asynchronous download of PDF
+var currPage = 1; //Pages are 1-based not 0-based
+var numPages = 0;
+var thePDF = null;
+
+    var loadingTask = pdfjsLib.getDocument(url);
+    loadingTask.promise.then(function(pdf) {
+        console.log('PDF loaded');
+
+        //Set PDFJS global object (so we can easily access in our page functions
+        thePDF = pdf;
+
+        //How many pages it has
+        numPages = pdf.numPages;
+
+        //Start with first page
+        pdf.getPage( 1 ).then( handlePages );
+
+}, function (reason) {
+  // PDF loading error
+  console.error(reason);
+});
+
+}
+
+  //]]></script>
+
+</head>
+<body>
+    <div id="pdf-canvas"></div>
+    <div id="pdf-text"></div>
+    <script src="https://unpkg.com/pdfjs-dist@2.2.228/build/pdf.js"></script>
+
+<script src="http://localhost:8888/tsugi-static/js/jquery-1.11.3.js"></script>
+<script src="http://localhost:8888/tsugi-static/js/jquery-ui-1.11.4/jquery-ui.min.js"></script>
+<script src="http://localhost:8888/tsugi-static/js/annotator-full.1.2.10/annotator-full.min.js"></script>
+<script type="text/javascript">
+    function startUp() {
+      alert('Here we go');
+      jQuery('body').annotator()
+      // jQuery('#viewerContainer').annotator()
+      .annotator('setupPlugins', {} , {
+         Auth: false,
+         Tags: false,
+         Filter: false,
+         Store: {
+            prefix: 'http://localhost:8888/py4e/mod/ckpaper/store/0ca55cc61af5797b2ee3186e5e25ba22',
+            loadFromSearch: false
+         }
+      } );
+      console.log('Annotator started');
+}
+// setTimeout(startUp,10000);
+</script>
+
+</body>
