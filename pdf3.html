@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>PDF.js &#39;Hello, base64!&#39; example</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="googlebot" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+  <script
+    type="text/javascript"
+    src="/js/lib/dummy.js"
+    
+  ></script>
+
+    <link rel="stylesheet" type="text/css" href="/css/result-light.css">
+
+
+  <style id="compiled-css" type="text/css">
+      .pdf-page {
+  border: 1px solid black;
+  direction: ltr;
+}
+  </style>
+
+
+    <script type="text/javascript">//<![CDATA[
+
+        // https://stackoverflow.com/a/19099203/1994792
+    window.onload=function(){
+
+// If absolute URL from the remote server is provided, configure the CORS
+// header on that server.
+// var url = 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/examples/learning/helloworld.pdf';
+var url = 'pythonlearn.pdf';
+
+// Loaded via <script> tag, create shortcut to access PDF.js exports.
+var pdfjsLib = window['pdfjs-dist/build/pdf'];
+
+// The workerSrc property shall be specified.
+// pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@2.2.228/build/pdf.worker.js';
+
+function handlePages(page)
+{
+    //This gives us the page's dimensions at full scale
+    var viewport = page.getViewport( 1 );
+
+    //We'll create a canvas for each page to draw it on
+    var canvas = document.createElement( "canvas" );
+    canvas.style.display = "block";
+    var context = canvas.getContext('2d');
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+    canvas.setAttribute('class', 'pdf-page');
+
+    //Draw it on the canvas
+    page.render({canvasContext: context, viewport: viewport});
+
+    //Add it to the web page
+    document.body.appendChild( canvas );
+
+    //Move to next page
+    currPage++;
+    if ( thePDF !== null && currPage <= numPages )
+    {
+        thePDF.getPage( currPage ).then( handlePages );
+    }
+}
+
+
+// Asynchronous download of PDF
+var currPage = 1; //Pages are 1-based not 0-based
+var numPages = 0;
+var thePDF = null;
+
+    var loadingTask = pdfjsLib.getDocument(url);
+    loadingTask.promise.then(function(pdf) {
+        console.log('PDF loaded');
+
+        //Set PDFJS global object (so we can easily access in our page functions
+        thePDF = pdf;
+
+        //How many pages it has
+        numPages = pdf.numPages;
+
+        //Start with first page
+        pdf.getPage( 1 ).then( handlePages );
+
+}, function (reason) {
+  // PDF loading error
+  console.error(reason);
+});
+
+}
+
+  //]]></script>
+
+</head>
+<body>
+    <script src="https://unpkg.com/pdfjs-dist@2.2.228/build/pdf.js"></script>
+
+<h1>PDF3</h1>
+  
+</body>
